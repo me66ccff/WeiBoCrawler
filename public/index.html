@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset="UTF-8">
+	<title>会话管理</title>
+	<!-- 最新版本的 Bootstrap 核心 CSS 文件 -->
+	<script type="text/javascript" src="jquery-3.1.0.min.js"></script>
+	<script src="bootstrap/js/bootstrap.min.js"></script>
+	<link href="bootstrap/css/bootstrap.min.css" rel="stylesheet">
+	<script src="js/jquery.growl.js"></script>
+	<link href="css/jquery.growl.css" rel="stylesheet">
+	<link href="css/buttons.css" rel="stylesheet">
+	<link href="css/mycss.css" rel="stylesheet">
+	<link rel=‘icon’ href="favicon.ico">
+	<script src="js/echarts.min.js"></script>
+
+	<script type="text/javascript">
+
+		// 进度条
+		function setProgress(event) {
+			if (event.lengthComputable) {
+				complete = Number.parseInt(event.loaded / event.total * 100);
+				progress.getAttributeNode("style").value = "width:" + complete + '%';
+			}
+		}
+		function del(name) {
+			//alert(name);
+			$.ajax({
+				url: '/del',
+				type: 'POST',
+				data: {
+					name: name
+				},
+				success: function (data) {
+					if (data.ret_code === 0) {
+						location.reload();
+					} else if (data.ret_code === 1) {
+						$.growl.error({ title: "错误提示", message: data.ret_msg });
+						//$.bootstrapGrowl(data.ret_msg);
+					} else if (data.ret_code === 2) {
+						$.growl.error({ title: "错误提示", message: data.ret_msg });
+						//$.bootstrapGrowl(data.ret_msg);
+					}
+				}
+			});
+		}
+
+	</script>
+</head>
+
+<body>
+	<!-- 头部 -->
+	<nav class="navbar navbar-default" role="navigation">
+		<div class="container-fluid">
+			<div class="navbar-header">
+				<center>
+					<div class="navbar-brand">微博爬虫</div>
+				</center>
+			</div>
+		</div>
+	</nav>
+	<!-- 数据列表 -->
+	<div class="container">
+		<div class="row ">
+			<div class="col-sm-8 col-sm-offset-2 col-md-10 col-md-offset-1 col-lg-10 col-lg-offset-1">
+				<div class="panel panel-primary center-block">
+					<div class="panel-heading">
+						<center>
+							<h3 class="panel-title">
+								数据列表
+							</h3>
+						</center>
+					</div>
+					<div class="panel-body ">
+						<div class="modal-body">请先单击右下角按钮以抓取数据！</div>
+						<table class="table">
+							<tr>
+								<th>
+									<center>数据编号</center>
+								</th>
+								<th>
+									<center>数据名称</center>
+								</th>
+								<th>
+									<center>查看</center>
+								</th>
+							</tr>
+
+							<tr>
+								<td>
+									<center>
+										<div class="button button-primary button-circle button-small button-black" disabled>
+											1
+										</div>
+									</center>
+
+								</td>
+								<td>
+									<center>
+										全部微博在一个月中的发送次数
+									</center>
+
+								</td>
+								<td>
+									<center>
+										<a class="button button-primary button-pill button-small" href="" data-toggle="modal" data-target="#Modal_allinonemonth_weibomsgtimes"
+										 id="Modal_allinonemonth_weibomsgtimes_btn">在线查看</a>
+									</center>
+								</td>
+							</tr>
+							<tr>
+								<td>
+									<center>
+										<div class="button button-primary button-circle button-small button-black" disabled>
+											2
+										</div>
+									</center>
+
+								</td>
+								<td>
+									<center>
+										对比微博数据
+									</center>
+
+								</td>
+								<td>
+									<center>
+										<a class="button button-primary button-pill button-small" href="" data-toggle="modal" data-target="#Modal_contrast" id="Modal_contrast_btn">在线查看</a>
+									</center>
+								</td>
+							</tr>
+
+						</table>
+					</div>
+				</div>
+			</div>
+
+		</div>
+	</div>
+	<!-- 爬取输入按钮 -->
+	<a>
+		<button class="button button-royal button-circle button-giant" id="UpdataBtn" data-toggle="modal" data-target="#Modal_start">
+			爬取
+		</button>
+	</a>
+	<!-- 输入名称或者uid创口 -->
+	<div class="modal fade " id="Modal_start" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" data-backdrop="static">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header">
+					开始界面
+				</div>
+				<div class="modal-body">
+					<a1>请输入微博名或微博用户UID</a1>
+					<br>
+					<a3>未抓取完成前无法关闭此页面</a3>
+				</div>
+				<div class="list-group">
+					<li class="list-group-item">
+						<label for="name">名称</label>
+						<input type="text" class="form-control" id="name" placeholder="请输入爬取名称">
+					</li>
+					<li class="list-group-item">
+						<label>
+							<input type="checkbox" id="isname" checked="checked"> 是否为微博名？ </label>
+					</li>
+					<li class="list-group-item">
+						<button id="start" class="btn btn-lg btn-primary btn-block">开始爬取</button>
+					</li>
+
+				</div>
+			</div>
+		</div>
+	</div>
+	<!-- 全部放到一个月，查看每一天发多少条 -->
+	<div class="modal fade " id="Modal_allinonemonth_weibomsgtimes" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
+	 aria-hidden="true">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header">
+					全部微博在一个月中的发送次数
+				</div>
+				<div class="modal-body" id="Modal_allinonemonth_weibomsgtimes_body" style="width: 600px;height:400px;">
+
+				</div>
+			</div>
+		</div>
+	</div>
+	<!-- 对比 -->
+	<div class="modal fade " id="Modal_contrast" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header">
+					数据对比
+				</div>
+				<div class="modal-body">
+					<div id="name1" class="modal-header">
+
+					</div>
+					<center>
+						<div class="modal-body" id="Modal_contrast_body" style="width: 500px;height:500px;">
+
+						</div>
+					</center>
+
+					<div id="name2" class="modal-header">
+
+					</div>
+					<center>
+						<div class="modal-body" id="Modal_contrast_body1" style="width: 500px;height:500px;">
+
+						</div>
+					</center>
+
+				</div>
+			</div>
+		</div>
+	</div>
+	</div>
+
+	<script type="text/javascript">
+		var server = "http://127.0.0.1:10086/";
+		var intervalID;
+		var oldmsg = "";
+		//更新状态
+		function updatadownstatus() {
+			$.ajax({
+				url: server + 'status',
+				type: 'GET',
+				dataType: 'JSON',
+				data: {
+				},
+				success: function (data) {
+					//下载页面
+					if (data.ret_code === 1) {
+						if (oldmsg != data.ret_msg) {
+							oldmsg = data.ret_msg;
+							if (data.ret_msg == "所有页面爬取任务完成") {
+								$.growl.error({ title: "页面爬取任务完成", message: "开始生成数据." });
+								setTimeout("$('#Modal_start').modal('hide')", 2000);
+								//setTimeout("$('#Modal_start').modal('hide')", 2000);
+								clearInterval(intervalID);
+							} else {
+								$.growl.notice({ title: "状态更新", message: data.ret_msg });
+							}
+						}
+
+					}
+				}
+			});
+
+		}
+		//开始爬取按钮
+		$('#start').click(function (evt) {
+			//alert("asdasd");
+			evt.preventDefault();
+			$.ajax({
+				url: server + 'start',
+				type: 'GET',
+				dataType: 'JSON',
+				data: {
+					name: $('#name').val(),
+					isname: $('#isname').is(':checked')
+				},
+				success: function (data) {
+					if (data.ret_code === 0) {
+						$.growl.notice({ title: "开始爬取", message: "爬取完成后将自动更新数据，请不要关闭窗口. " });
+						intervalID = setInterval("updatadownstatus()", 500);
+						//setTimeout("location.reload()", 2000);
+					}
+				}
+			});
+		});
+
+
+		//所有微博放在一个月中看（发送次数）Modal_allinonemonth_weibomsgtimes
+		var allinonemonth_weibomsgtimes = echarts.init(document.getElementById('Modal_allinonemonth_weibomsgtimes_body'));
+		allinonemonth_weibomsgtimes_option = {
+			tooltip: {
+				trigger: 'axis',
+				axisPointer: {
+					type: 'cross'
+				}
+			},
+			legend: {
+				data: ['微博发送量']
+			},
+			grid: {
+				left: '3%',
+				right: '4%',
+				bottom: '3%',
+				containLabel: true
+			},
+			toolbox: {
+				feature: {
+					saveAsImage: {}
+				}
+			},
+			xAxis: {
+				type: 'category',
+				boundaryGap: false,
+				data: ['1号', '2号', '3号', '4号', '5号', '6号', '7号', '8号', '9号', '10号', '11号', '12号', '13号', '14号', '15号', '16号', '17号', '18号', '19号', '20号', '21号', '22号', '23号', '24号', '25号', '26号', '27号', '28号', '29号', '30号', '31号']
+			},
+			yAxis: {
+				type: 'value'
+			},
+			series: [
+				{
+					name: '微博发送量',
+					type: 'line',
+					smooth: true,
+					data: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+				}
+			]
+		};
+		allinonemonth_weibomsgtimes.setOption(allinonemonth_weibomsgtimes_option);
+		$("#Modal_allinonemonth_weibomsgtimes_btn").click(function (evt) {
+			evt.preventDefault();
+			$.ajax({
+				url: server + 'getdata',
+				type: 'GET',
+				data: {
+					type: "allinonemonth_weibomsgtimes"
+				},
+				success: function (data) {
+					var _tmp = new Array();
+					var _tmp1 = true;
+					console.log(data);
+
+					for (var i = 1; _tmp1 != false; i++) {
+						if (i < 10) {
+							if (data["0" + i]) {
+								_tmp.push(data["0" + i]);
+							} else {
+								_tmp.push(0);
+							}
+						} else if (i <= 31) {
+							if (data[i]) {
+								_tmp.push(data[i]);
+							} else {
+								_tmp.push(0);
+							}
+						} else {
+							_tmp1 = false;
+						}
+					}
+					// console.log(data);
+					// for(var i = 0;i<_tmp.length;i++){
+					// 	if(!_tmp[i]){
+					// 		console.log(i);
+					// 		console.log(_tmp[i]);
+					// 		_tmp[i] = 0;
+					// 		console.log(_tmp[i]);
+					// 	}
+					// }
+					// console.log(data);
+					console.log(_tmp);
+
+					allinonemonth_weibomsgtimes_option.series[0].data = _tmp;
+					allinonemonth_weibomsgtimes.setOption(allinonemonth_weibomsgtimes_option);
+				}
+			});
+		});
+
+		//对比两者的亲密度 Modal_contrast_body
+		var contrast = echarts.init(document.getElementById('Modal_contrast_body'));
+		contrast_option = {
+			tooltip: {
+				trigger: 'item',
+				formatter: "{a} <br/>{b}: {c} ({d}%)"
+			},
+			legend: {
+				orient: 'vertical',
+				x: 'left',
+			},
+			series: [
+				{
+					name: '交流次数',
+					type: 'pie',
+					radius: ['50%', '70%'],
+					avoidLabelOverlap: false,
+					label: {
+						normal: {
+							show: false,
+							position: 'center'
+						},
+						emphasis: {
+							show: true,
+							textStyle: {
+								fontSize: '30',
+								fontWeight: 'bold'
+							}
+						}
+					},
+					labelLine: {
+						normal: {
+							show: false
+						}
+					},
+					data: [
+						{ value: 335, name: '1' },
+						{ value: 310, name: '2' },
+						{ value: 234, name: '3' },
+						{ value: 135, name: '4' },
+						{ value: 1548, name: '5' }
+					]
+				}
+			]
+		};
+		contrast.setOption(contrast_option);
+
+		var contrast1 = echarts.init(document.getElementById('Modal_contrast_body1'));
+		contrast1_option = {
+			tooltip: {
+				trigger: 'item',
+				formatter: "{a} <br/>{b}: {c} ({d}%)"
+			},
+			legend: {
+				orient: 'vertical',
+				x: 'left',
+			},
+			series: [
+				{
+					name: '交流次数',
+					type: 'pie',
+					radius: ['50%', '70%'],
+					avoidLabelOverlap: false,
+					label: {
+						normal: {
+							show: false,
+							position: 'center'
+						},
+						emphasis: {
+							show: true,
+							textStyle: {
+								fontSize: '30',
+								fontWeight: 'bold'
+							}
+						}
+					},
+					labelLine: {
+						normal: {
+							show: false
+						}
+					},
+					data: [
+						{ value: 335, name: '1' },
+						{ value: 310, name: '2' },
+						{ value: 234, name: '3' },
+						{ value: 135, name: '4' },
+						{ value: 1548, name: '5' }
+					]
+				}
+			]
+		};
+		contrast1.setOption(contrast1_option);
+		$("#Modal_contrast_btn").click(function (evt) {
+			evt.preventDefault();
+			$.ajax({
+				url: server + 'getdata',
+				type: 'GET',
+				data: {
+					type: "contrast"
+				},
+				success: function (data) {
+					//console.log(data);
+					$("#name1").text("用户 " + data["mainusername"] + " 的数据 ");
+					$("#name2").text("用户 " + data["otherusername"] + " 的数据 ");
+					var tmp = data["mainuserslist"];
+					var tmpdata = new Array();
+					for (var i in tmp) {
+						if (tmp[i]) {
+							tmpdata.push({ name: i, value: tmp[i] });
+						}
+
+					}
+					console.log(tmpdata);
+					contrast_option.series[0].data = tmpdata;
+					contrast.setOption(contrast_option);
+					tmpdata = [];
+					tmp = null;
+					tmp = data["otheruserslist"];
+					for (var i in tmp) {
+						if (tmp[i] > 3) {
+							tmpdata.push({ name: i, value: tmp[i] });
+						}
+
+					}
+					console.log(tmpdata);
+					contrast1_option.series[0].data = tmpdata;
+					contrast1.setOption(contrast1_option);
+				}
+			});
+		});
+	</script>
+</body>
+
+</html>

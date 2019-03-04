@@ -1,0 +1,13 @@
+{
+  "scripts": {
+    "start": "node server.js"
+  },
+  "name": "",
+  "version": "",
+  "dependencies": {
+    "cheerio": "^1.0.0-rc.2",
+    "superagent": "^3.6.0",
+    "superagent-charset": "^1.2.0",
+    "transliteration": "^1.6.2"
+  }
+}
